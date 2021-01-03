@@ -16,7 +16,12 @@ interface View {
     fun getImagePath(): String
 
     fun checkCollision(target: View): Boolean {
-        return !(x + width < target.x || x > target.x + target.width
-                || y + height < target.y || y > target.y + target.height)
+        return !(x + width <= target.x || x >= target.x + target.width
+                || y + height <= target.y || y >= target.y + target.height)
+    }
+
+    fun checkCollision(x: Int, y: Int, target: View): Boolean {
+        return !(x + width <= target.x || x >= target.x + target.width
+                || y + height <= target.y || y >= target.y + target.height)
     }
 }

@@ -1,9 +1,9 @@
 package my.model
 
 import my.Config
-import org.itheima.kotlin.game.core.Painter
+import my.business.Coverable
 
-class Grass(override var x: Int, override var y: Int): View {
+class Grass(override var x: Int, override var y: Int): Coverable {
     override val width: Int = Config.block
     override val height: Int = Config.block
 

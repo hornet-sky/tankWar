@@ -2,12 +2,14 @@ package my
 
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
+import my.business.Blockable
+import my.business.Coverable
+import my.business.Movable
 import my.enums.Direction
 import my.model.*
 import org.itheima.kotlin.game.core.Composer
 import org.itheima.kotlin.game.core.Window
 import java.io.BufferedReader
-import java.io.InputStream
 import java.io.InputStreamReader
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -34,7 +36,12 @@ class GameWindow: Window(title = "坦克大战", icon = "img/tank_u.gif", width 
     }
 
     override fun onDisplay() {
-        views.forEach {
+        views.filter {
+            if(it !is Coverable) {
+                it.draw()
+            }
+            it is Coverable
+        }.forEach { // 覆盖层最后画
             it.draw()
         }
     }
@@ -49,5 +56,24 @@ class GameWindow: Window(title = "坦克大战", icon = "img/tank_u.gif", width 
     }
 
     override fun onRefresh() {
+        val blockableList: List<Blockable> = views.filter { it is Blockable }.map { it as Blockable }
+        views.forEach { v ->
+            if(v is Movable) {
+                v as Movable
+                var blockDirection: Direction? = null
+                var blockTarget: Blockable? = null
+                blockableList.forEach loop1@ { target ->
+                    if(v != target) {
+                        v.willCollision(target)?.let { // 找到了阻塞物
+                            blockDirection = it
+                            blockTarget = target
+                            return@loop1
+                        }
+
+                    }
+                }
+                v.notifyCollision(blockDirection, blockTarget)
+            }
+        }
     }
 }

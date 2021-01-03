@@ -1,9 +1,9 @@
 package my.model
 
 import my.Config
-import org.itheima.kotlin.game.core.Painter
+import my.business.Blockable
 
-class Wall(override var x: Int, override var y: Int): View {
+class Wall(override var x: Int, override var y: Int): Blockable {
     override val width: Int = Config.block
     override val height: Int = Config.block
 
