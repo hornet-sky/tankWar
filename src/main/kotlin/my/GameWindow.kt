@@ -6,6 +6,7 @@ import my.business.*
 import my.enums.Direction
 import my.model.*
 import org.itheima.kotlin.game.core.Composer
+import org.itheima.kotlin.game.core.Painter
 import org.itheima.kotlin.game.core.Window
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -14,6 +15,8 @@ import java.util.concurrent.CopyOnWriteArrayList
 class GameWindow: Window(title = "坦克大战", icon = "img/tank_u.gif", width = Config.gameWindowWidth, height = Config.gameWindowHeight) {
     private val views = CopyOnWriteArrayList<View>(); // 线程安全的List，允许多个线程同时操作该List实例
     private lateinit var tank: Tank
+    private lateinit var camp: Camp
+    private var gameOver:Boolean = false
     override fun onCreate() {
         BufferedReader(InputStreamReader(javaClass.getResourceAsStream("/map/1.map"), "utf-8")).use {
             it.readLines().forEachIndexed { rowIdx, line ->
@@ -29,10 +32,14 @@ class GameWindow: Window(title = "坦克大战", icon = "img/tank_u.gif", width 
                 }
             }
         }
+
         tank = Tank(10 * Config.block, 12 * Config.block, Direction.UP)
         views.add(tank)
-        Composer.play("snd/start.wav")
 
+        camp = Camp(Config.gameWindowWidth / 2 - Config.block, Config.gameWindowHeight - Config.block - Config.block / 2)
+        views.add(camp)
+
+        Composer.play("snd/start.wav")
     }
 
     override fun onDisplay() {
@@ -44,9 +51,13 @@ class GameWindow: Window(title = "坦克大战", icon = "img/tank_u.gif", width 
         }.forEach { // 覆盖层最后画
             it.draw()
         }
+        if(gameOver) {
+            Painter.drawImage("img/gameover.gif", Config.gameWindowWidth / 2 - 48, Config.gameWindowHeight - 96)
+        }
     }
 
     override fun onKeyPressed(event: KeyEvent) {
+        if(gameOver) return
         when(event.code) {
             KeyCode.W, KeyCode.UP -> tank.notifyMove(Direction.UP)
             KeyCode.D, KeyCode.RIGHT -> tank.notifyMove(Direction.RIGHT)
@@ -68,8 +79,14 @@ class GameWindow: Window(title = "坦克大战", icon = "img/tank_u.gif", width 
                 v as Destroyable
                 if(v.isDestroy()) {
                     views.remove(v)
+                    if(v is Camp) {
+                        gameOver = true
+                    }
                     return@forEach // 结束当前函数体，类似于 continue
                 }
+            }
+            if(gameOver) {
+                return
             }
             if(v is Movable) {
                 v as Movable
