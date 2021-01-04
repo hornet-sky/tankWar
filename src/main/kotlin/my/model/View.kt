@@ -24,4 +24,9 @@ interface View {
         return !(x + width <= target.x || x >= target.x + target.width
                 || y + height <= target.y || y >= target.y + target.height)
     }
+    fun checkSeamless(target: View): Boolean {
+        return !(x + width < target.x || x > target.x + target.width
+                || y + height < target.y || y > target.y + target.height)
+    }
+
 }

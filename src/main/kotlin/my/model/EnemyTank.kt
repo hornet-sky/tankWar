@@ -6,6 +6,7 @@ import my.enums.Direction
 import org.itheima.kotlin.game.core.Composer
 
 class EnemyTank(x: Int, y: Int, currentDirection: Direction): Tank(x, y, currentDirection), AutoRandomMovable, AutoAttackable {
+    override var speed: Int = 2
     override var cd: Long = 0L
 
     override fun getImagePath(): String {

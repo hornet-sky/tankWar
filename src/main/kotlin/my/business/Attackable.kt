@@ -6,7 +6,8 @@ import my.model.Bullet
 import my.model.View
 
 interface Attackable: View {
+    var cd:Long
     var attackPower:Int
     var currentDirection: Direction
-    fun shot(): Bullet
+    fun shot(): Bullet?
 }

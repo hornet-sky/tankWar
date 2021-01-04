@@ -53,7 +53,9 @@ class GameWindow: Window(title = "坦克大战", icon = "img/tank_u.gif", width 
             KeyCode.S, KeyCode.DOWN -> tank.notifyMove(Direction.DOWN)
             KeyCode.A, KeyCode.LEFT -> tank.notifyMove(Direction.LEFT)
             KeyCode.SPACE, KeyCode.ENTER -> {
-                views.add(tank.shot()) // 添加射出的子弹
+                tank.shot()?.let {
+                    views.add(it) // 添加射出的子弹
+                }
             }
         }
     }
@@ -75,6 +77,13 @@ class GameWindow: Window(title = "坦克大战", icon = "img/tank_u.gif", width 
                 var blockTarget: Blockable? = null
                 blockableList.forEach loop1@ { target ->
                     if(v != target) {
+                        if(v is Bullet) {
+                            v as Bullet
+                            if(v.owner == target // 自己与自己发射的子弹不相互阻塞
+                                || target is Water) { // 子弹能穿过水
+                                return@loop1
+                            }
+                        }
                         v.willCollision(target)?.let { // 找到了阻塞物
                             blockDirection = it
                             blockTarget = target
@@ -86,14 +95,17 @@ class GameWindow: Window(title = "坦克大战", icon = "img/tank_u.gif", width 
                 v.notifyCollision(blockDirection, blockTarget)
             }
             if(v is AutoMovable) {
-                v as AutoMovable
+                if(v is AutoRandomMovable) v as AutoRandomMovable
+                else v as AutoMovable
                 v.notifyAutoMove()
                 if(v is Bullet) {
                     v as Bullet
                     sufferableList.forEach {
-                        if(v != it && v.checkCollision(it)) {
+                        if(v != it && v.owner != it &&  v.checkSeamless(it)) {
                             views.remove(v)
-                            it.notifySuffer(v.owner)
+                            it.notifySuffer(v.owner)?.let {
+                                views.addAll(it)
+                            }
                         }
                     }
                 }

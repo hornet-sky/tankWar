@@ -32,6 +32,13 @@ interface Movable: View {
         return outOfBounds() != null
     }
 
+    fun isBlockOfBounds(): Boolean {
+        return y <= 0 && currentDirection == Direction.UP
+                || y + height >= Config.gameWindowHeight  && currentDirection == Direction.DOWN
+                || x <= 0 && currentDirection == Direction.LEFT
+                || x + width >= Config.gameWindowWidth  && currentDirection == Direction.RIGHT
+    }
+
     fun notifyCollision(blockDirection: Direction?, target: Blockable?) {
         this.blockDirection = blockDirection
         this.blockTarget = target
