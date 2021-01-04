@@ -18,7 +18,7 @@ interface Movable: View {
         else null
     }
 
-    fun outOfBound(): Direction? {
+    fun outOfBounds(): Direction? {
         return when {
             y < 0 -> Direction.UP
             y > Config.gameWindowHeight -> Direction.DOWN
@@ -28,6 +28,10 @@ interface Movable: View {
         }
     }
 
+    fun isOutOfBounds(): Boolean {
+        return outOfBounds() != null
+    }
+
     fun notifyCollision(blockDirection: Direction?, target: Blockable?) {
         this.blockDirection = blockDirection
         this.blockTarget = target
@@ -35,7 +39,7 @@ interface Movable: View {
 
     fun notifyMove(direction: Direction) {
         if(direction != currentDirection) {
-            currentDirection = direction // 坦克转向
+            currentDirection = direction // 转向
             return
         }
         if(currentDirection == blockDirection) {

@@ -2,9 +2,7 @@ package my
 
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
-import my.business.Blockable
-import my.business.Coverable
-import my.business.Movable
+import my.business.*
 import my.enums.Direction
 import my.model.*
 import org.itheima.kotlin.game.core.Composer
@@ -26,13 +24,15 @@ class GameWindow: Window(title = "坦克大战", icon = "img/tank_u.gif", width 
                         'T' -> views.add(Steel(colIdx * Config.block, rowIdx * Config.block))
                         'C' -> views.add(Grass(colIdx * Config.block, rowIdx * Config.block))
                         'S' -> views.add(Water(colIdx * Config.block, rowIdx * Config.block))
+                        'D' -> views.add(EnemyTank(colIdx * Config.block, rowIdx * Config.block, Direction.DOWN))
                     }
                 }
             }
         }
-        tank = Tank(10 * Config.block, 12 * Config.block)
+        tank = Tank(10 * Config.block, 12 * Config.block, Direction.UP)
         views.add(tank)
         Composer.play("snd/start.wav")
+
     }
 
     override fun onDisplay() {
@@ -52,12 +52,23 @@ class GameWindow: Window(title = "坦克大战", icon = "img/tank_u.gif", width 
             KeyCode.D, KeyCode.RIGHT -> tank.notifyMove(Direction.RIGHT)
             KeyCode.S, KeyCode.DOWN -> tank.notifyMove(Direction.DOWN)
             KeyCode.A, KeyCode.LEFT -> tank.notifyMove(Direction.LEFT)
+            KeyCode.SPACE, KeyCode.ENTER -> {
+                views.add(tank.shot()) // 添加射出的子弹
+            }
         }
     }
 
     override fun onRefresh() {
         val blockableList: List<Blockable> = views.filter { it is Blockable }.map { it as Blockable }
+        val sufferableList: List<Sufferable> = views.filter { it is Sufferable }.map { it as Sufferable }
         views.forEach { v ->
+            if(v is Destroyable) {
+                v as Destroyable
+                if(v.isDestroy()) {
+                    views.remove(v)
+                    return@forEach // 结束当前函数体，类似于 continue
+                }
+            }
             if(v is Movable) {
                 v as Movable
                 var blockDirection: Direction? = null
@@ -73,6 +84,25 @@ class GameWindow: Window(title = "坦克大战", icon = "img/tank_u.gif", width 
                     }
                 }
                 v.notifyCollision(blockDirection, blockTarget)
+            }
+            if(v is AutoMovable) {
+                v as AutoMovable
+                v.notifyAutoMove()
+                if(v is Bullet) {
+                    v as Bullet
+                    sufferableList.forEach {
+                        if(v != it && v.checkCollision(it)) {
+                            views.remove(v)
+                            it.notifySuffer(v.owner)
+                        }
+                    }
+                }
+            }
+            if(v is AutoAttackable) {
+                v as AutoAttackable
+                v.autoShot()?.let {
+                    views.add(it)
+                }
             }
         }
     }

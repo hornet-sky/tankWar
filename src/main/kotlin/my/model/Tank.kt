@@ -1,18 +1,26 @@
 package my.model
 
 import my.Config
-import my.business.Blockable
-import my.business.Movable
+import my.business.*
 import my.enums.Direction
+import org.itheima.kotlin.game.core.Composer
 
-class Tank(override var x: Int, override var y: Int): Movable, Blockable {
+open class Tank(override var x: Int, override var y: Int, override var currentDirection: Direction): Movable, Blockable, Attackable, Destroyable, Sufferable {
+    override var blood: Int = Config.defBlood * 2
     override val width: Int = Config.block
     override val height: Int = Config.block
-    override var currentDirection: Direction = Direction.UP
+    override var attackPower: Int = Config.defAttackPower
     override var speed: Int = Config.defSpeed
     override val allowOutOfMapBound: Boolean = false
     override var blockDirection: Direction? = null
     override var blockTarget: Blockable? = null
+
+    override fun shot(): Bullet {
+        Composer.play("snd/fire.wav")
+        return Bullet(this)
+    }
+
+    override fun isDestroy() = blood <= 0
 
     override fun getImagePath(): String {
         return when(currentDirection) {
